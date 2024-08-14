@@ -4,18 +4,18 @@ const clearButton = document.getElementById('clear-button');
 const canvas = document.getElementById('graphCanvas');
 const ctx = canvas.getContext('2d');
 const points = [];
-const gridSize = 20;
+const gridSize = 10;
 
 // Count of the cells
 const height = canvas.height / gridSize;
 const width = canvas.width / gridSize;
 
 // State of the cell, Array of arrays
-const grid = new Array(height).fill(new Array(width).fill(0));
+const grid = new Array(width).fill(null).map(() => new Array(height));
 grid.forEach(arr => arr.fill(0));
 
 // drag-populate set and flag variable
-let positions = new Set();
+let positions = [];
 let clicked = 0;
 
 // render the grid
@@ -36,6 +36,14 @@ function drawGraph() {
         ctx.stroke();
     }
 
+    for(let x=0;x<width;x++) {
+        for(let y=0;y<height;y++) {
+            if(grid[x][y]) {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(x * gridSize + 1, y * gridSize + 1, gridSize-2, gridSize-2);
+            }
+        }
+    }
 }
 
 function getMouseCoords (click_event) {
@@ -46,41 +54,35 @@ function getMouseCoords (click_event) {
     }
 }
 
-
 canvas.addEventListener('mouseup', function () {
     clicked^=1;
 });
 
 canvas.addEventListener('mousedown', function (click_event) {
     clicked^=1;
-    positions.clear();
 
+    // toggle cell state
     const {x, y} = getMouseCoords(click_event);
 
-    if(grid[x][y]) {
-        ctx.clearRect(x * gridSize + 1, y * gridSize + 1, gridSize-2, gridSize-2);
-    } else {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(x * gridSize + 1, y * gridSize + 1, gridSize-2, gridSize-2);
-    }
+    positions.push([x, y]);
     grid[x][y]^=1;
+
+    drawGraph();
 });
 
 canvas.addEventListener('mousemove', function (click_event) {
     const {x, y} = getMouseCoords(click_event);
 
     // save the values in set not to update it on every event trigger
-    let set_pos = x * canvas.width + y;
-    if(!clicked || positions.has(set_pos)) return;
-    positions.add(set_pos);
+    if(!clicked
+        || positions.find(([a, b]) => x == a && y == b))
+        return;
 
-    if(grid[x][y]) {
-        ctx.clearRect(x * gridSize + 1, y * gridSize + 1, gridSize-2, gridSize-2);
-    } else {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(x * gridSize + 1, y * gridSize + 1, gridSize-2, gridSize-2);
-    }
+    // toggle cell state
+    positions.push([x, y]);
     grid[x][y]^=1;
+
+    drawGraph();
 });
 
 clearButton.addEventListener('click', function() {
