@@ -6,16 +6,19 @@ const ctx = canvas.getContext('2d');
 const points = [];
 const gridSize = 20;
 
+// Count of the cells
 const height = canvas.height / gridSize;
 const width = canvas.width / gridSize;
 
-const grid = new Array(height * width);
-grid.fill(0);
+// State of the cell, Array of arrays
+const grid = new Array(height).fill(new Array(width).fill(0));
+grid.forEach(arr => arr.fill(0));
 
-const get_grid = (x, y) => grid[x*canvas.width + y];
+// drag-populate set and flag variable
+let positions = new Set();
+let clicked = 0;
 
-const set_grid = (x, y, value) => grid[x*canvas.width + y] = value;
-
+// render the grid
 function drawGraph() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -32,6 +35,7 @@ function drawGraph() {
         ctx.lineTo(canvas.width, y);
         ctx.stroke();
     }
+
 }
 
 function getMouseCoords (click_event) {
@@ -42,7 +46,6 @@ function getMouseCoords (click_event) {
     }
 }
 
-let clicked = 0;
 
 canvas.addEventListener('mouseup', function () {
     clicked^=1;
@@ -54,18 +57,14 @@ canvas.addEventListener('mousedown', function (click_event) {
 
     const {x, y} = getMouseCoords(click_event);
 
-    const value = get_grid(x, y);
-
-    if(value) {
+    if(grid[x][y]) {
         ctx.clearRect(x * gridSize + 1, y * gridSize + 1, gridSize-2, gridSize-2);
     } else {
         ctx.fillStyle = 'white';
         ctx.fillRect(x * gridSize + 1, y * gridSize + 1, gridSize-2, gridSize-2);
     }
-    set_grid(x, y, value^1);
+    grid[x][y]^=1;
 });
-
-let positions = new Set();
 
 canvas.addEventListener('mousemove', function (click_event) {
     const {x, y} = getMouseCoords(click_event);
@@ -75,19 +74,17 @@ canvas.addEventListener('mousemove', function (click_event) {
     if(!clicked || positions.has(set_pos)) return;
     positions.add(set_pos);
 
-    const value = get_grid(x, y);
-
-    if(value) {
+    if(grid[x][y]) {
         ctx.clearRect(x * gridSize + 1, y * gridSize + 1, gridSize-2, gridSize-2);
     } else {
         ctx.fillStyle = 'white';
         ctx.fillRect(x * gridSize + 1, y * gridSize + 1, gridSize-2, gridSize-2);
     }
-    set_grid(x, y, value^1);
+    grid[x][y]^=1;
 });
 
 clearButton.addEventListener('click', function() {
-    grid.fill(0); 
+    grid.forEach(arr => arr.fill(0)); 
     drawGraph(); 
 });
 
