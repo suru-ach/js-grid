@@ -184,4 +184,8 @@ startButton.addEventListener('click', () => gol.start());
 stopButton.addEventListener('click', () => gol.stop());
 setSpeed.addEventListener('change', (eve) => gol.setSpeed(eve.target.value));
 
+(function onStart() {
+    grid[40][40] = grid[40][39] = grid[40][41] = grid[39][40] = grid[41][41] = 1;
+})()
+
 drawGraph(); 
