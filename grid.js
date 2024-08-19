@@ -32,15 +32,15 @@ class Canvas {
         this.fillArray();
         this.drawGraph();
 
+        this.events = Object.create(null);
+
+        this.events['click'] = (eve) => this.getMouseCoords(eve);
         // For adding co-ordinates
-        this.canvas.addEventListener('click', (eve) => this.getMouseCoords(eve));
-
-        this.canvas.addEventListener('mouseup', function () {
-            this.clicked^=1;
-        });
-
         let object_instance = this;
-        this.canvas.addEventListener('mousedown', function (click_event, object = object_instance) {
+
+        this.events['mouseup'] = () => this.clicked^=1;
+
+        this.events['mousedown'] = (click_event, object = object_instance) => {
             this.clicked^=1;
 
             // toggle cell state
@@ -50,8 +50,36 @@ class Canvas {
             object.grid[x][y]^=1;
 
             object.drawGraph();
-        });
+        };
 
+        this.events['mousemove'] = (click_event, object = object_instance) => {
+
+            // toggle cell state
+            const {x, y} = object.getMouseCoords(click_event);
+
+            // save the values in set not to update it on every event trigger
+            if(this.clicked
+                || object.positions.find(([a, b]) => x == a && b == y))
+                return;
+            console.log(x, y);
+
+            object.positions.push([x, y]);
+            object.grid[x][y]^=1;
+
+            object.drawGraph();
+        };
+
+        this.canvas.addEventListener('click', this.events['click']);
+        this.canvas.addEventListener('mouseup', this.events['mouseup']);
+        this.canvas.addEventListener('mousedown', this.events['mousedown']);
+        this.canvas.addEventListener('mousemove', this.events['mousemove']);
+    }
+
+    destruct() {
+        this.canvas.removeEventListener('click', this.events['click']);
+        this.canvas.removeEventListener('mouseup', this.events['mouseup']);
+        this.canvas.removeEventListener('mousedown', this.events['mousedown']);
+        this.canvas.removeEventListener('mousemove', this.events['mousemove']);
     }
 
     zoomEnabled() {
@@ -103,12 +131,10 @@ class Canvas {
 
     getMouseCoords (click_event) {
         const rect = this.canvas.getBoundingClientRect();
-        const res = {
+        return {
             x: Math.floor((click_event.clientX - rect.left) / this.gridSize),
             y: Math.floor((click_event.clientY - rect.top) / this.gridSize)
         }
-        console.log(res);
-        return res;
     }
 
 }
@@ -145,6 +171,7 @@ class Instance {
     }
 
     reconfigureCanvas() {
+        if(this.canvas) this.canvas.destruct();
         this.setGridSize();
         this.canvas = new Canvas(this.gridSize);
         this.canvas.configure();
