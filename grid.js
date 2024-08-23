@@ -61,7 +61,6 @@ class Canvas {
             if(this.clicked
                 || object.positions.find(([a, b]) => x == a && b == y))
                 return;
-            console.log(x, y);
 
             object.positions.push([x, y]);
             object.grid[x][y]^=1;
@@ -87,7 +86,7 @@ class Canvas {
     }
 
     fillArray() {
-        this.grid = new Array(this.height).fill(null).map(() => new Array(this.width));
+        this.grid = new Array(this.width).fill(null).map(() => new Array(this.height));
         this.grid.forEach(array => array.fill(0));
         this.grid[1][2] = 1;        
         this.grid[2][2] = 1;        
@@ -114,8 +113,8 @@ class Canvas {
             }
         }
     
-        for(let x=0;x<this.height;x++) {
-            for(let y=0;y<this.width;y++) {
+        for(let x=0;x<this.width;x++) {
+            for(let y=0;y<this.height;y++) {
                 if(this.grid[x][y]) {
                     ctx.fillStyle = 'white';
                     // Remove to fit the length
